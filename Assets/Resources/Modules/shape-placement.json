@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "id": "shape-placement-101",
+  "title": "Placing Shapes",
+  "description": "Find a flat surface and place each shape.",
+  "scenario": {
+    "type": "placement",
+    "instructions": "Move your phone slowly to find a surface, then tap to place.",
+    "requireHorizontalSurface": true,
+    "steps": [
+      { "item": "cube", "count": 1, "prompt": "Place a cube" },
+      { "item": "cylinder", "count": 1, "prompt": "Place a cylinder" },
+      { "item": "pyramid", "count": 2, "prompt": "Place two pyramids" },
+      { "item": "torus", "count": 1, "prompt": "Place a torus", "scale": 0.75 }
+    ]
+  }
+}
