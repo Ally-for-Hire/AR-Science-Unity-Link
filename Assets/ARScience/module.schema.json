@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "module.schema.json",
+  "title": "AR Science module",
+  "description": "One lesson for the AR Science app. The app checks the same rules in ModuleCatalog.Validate (Assets/ARScience/Scripts/Core/ModuleDefinition.cs); keep the two in step when you change either.",
+  "type": "object",
+  "required": ["schemaVersion", "id", "title", "scenario"],
+  "properties": {
+    "$schema": { "type": "string", "description": "Turns on autocomplete in VS Code. The app ignores it." },
+    "schemaVersion": { "const": 1, "description": "Format version. Always 1 for now." },
+    "id": { "type": "string", "minLength": 1, "description": "Unique id, e.g. \"animal-cell-101\"." },
+    "title": { "type": "string", "minLength": 1, "description": "Shown in the Modules list." },
+    "description": { "type": "string", "description": "One line under the title in the Modules list." },
+    "scenario": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": { "enum": ["placement", "explore"], "description": "placement = place shapes step by step. explore = place a model, turn it, zoom, tap its parts." },
+        "instructions": { "type": "string", "description": "Help text shown at the top during the lesson." },
+        "requireHorizontalSurface": { "type": "boolean", "description": "Only allow placing on floors and tables." },
+        "steps": { "type": "array", "items": { "$ref": "#/$defs/step" }, "description": "For placement lessons." },
+        "models": { "type": "array", "items": { "$ref": "#/$defs/model" }, "description": "For explore lessons. More than one adds a Next model button." }
+      },
+      "allOf": [
+        { "if": { "properties": { "type": { "const": "placement" } } }, "then": { "required": ["steps"], "properties": { "steps": { "minItems": 1 } } } },
+        { "if": { "properties": { "type": { "const": "explore" } } }, "then": { "required": ["models"], "properties": { "models": { "minItems": 1 } } } }
+      ]
+    }
+  },
+  "$defs": {
+    "step": {
+      "type": "object",
+      "required": ["item"],
+      "properties": {
+        "item": { "type": "string", "description": "What to place: cube, cylinder, pyramid, torus, wedge, arch (or any prefab in the Object Spawner)." },
+        "count": { "type": "integer", "minimum": 1, "maximum": 5, "description": "How many. Default 1." },
+        "prompt": { "type": "string", "description": "What the student sees. Default \"Place a <item>\"." },
+        "scale": { "type": "number", "minimum": 0.25, "maximum": 3, "description": "Size multiplier. Default 1." }
+      }
+    },
+    "model": {
+      "type": "object",
+      "required": ["item"],
+      "properties": {
+        "item": { "type": "string", "description": "Prefab name in the Object Spawner, lower case, without \"Variant\" (e.g. \"celldemo\")." },
+        "title": { "type": "string", "description": "Shown while this model is on screen." },
+        "minZoom": { "type": "number", "exclusiveMinimum": 0, "maximum": 1, "description": "Smallest pinch size, 1 = as placed. Default 0.5." },
+        "maxZoom": { "type": "number", "minimum": 1, "maximum": 10, "description": "Biggest pinch size. Default 3." },
+        "parts": { "type": "array", "items": { "$ref": "#/$defs/part" } }
+      }
+    },
+    "part": {
+      "type": "object",
+      "required": ["id", "name"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "description": "Name of the child object in the prefab. Case, spaces, _ and - don't matter." },
+        "name": { "type": "string", "minLength": 1, "description": "Title shown when the part is tapped." },
+        "description": { "type": "string", "description": "Text shown under the title." },
+        "showFromZoom": { "type": "number", "exclusiveMinimum": 0, "description": "Hidden until zoomed in this far (inner parts)." },
+        "hideFromZoom": { "type": "number", "exclusiveMinimum": 0, "description": "Hidden once zoomed in this far (outer shells)." }
+      }
+    }
+  }
+}

@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace ARScience
@@ -46,18 +48,38 @@ namespace ARScience
         /// A full-size container. If not `opaque` it is invisible AND ignores taps,
         /// so touches pass through to whatever is behind it (here: the AR view).
         /// </summary>
-        public RectTransform Panel(string name, Transform parent, bool opaque)
-        {
-            var panel = NewRect(name, parent);
-            panel.anchorMin = Vector2.zero;
-            panel.anchorMax = Vector2.one;
-            panel.offsetMin = panel.offsetMax = Vector2.zero;
+        public RectTransform Panel(string name, Transform parent, bool opaque) =>
+            Box(name, parent, Vector2.zero, Vector2.one, opaque);
 
-            var image = panel.gameObject.AddComponent<Image>();
+        /// <summary>
+        /// A rectangle given by its corners, as fractions of the parent:
+        /// Box("Card", screen, new Vector2(0.05f, 0.2f), new Vector2(0.95f, 0.5f), true)
+        /// covers the middle 90% of the width, from 20% to 50% of the height.
+        /// Same `opaque` rule as Panel.
+        /// </summary>
+        public RectTransform Box(string name, Transform parent, Vector2 bottomLeft, Vector2 topRight, bool opaque)
+        {
+            var box = NewRect(name, parent);
+            box.anchorMin = bottomLeft;
+            box.anchorMax = topRight;
+            box.offsetMin = box.offsetMax = Vector2.zero;
+
+            var image = box.gameObject.AddComponent<Image>();
             image.color = opaque ? Background : Color.clear;
             image.raycastTarget = opaque;
-            return panel;
+            return box;
         }
+
+        /// <summary>True if a screen position is on top of a button or opaque panel (so it isn't meant for the AR view).</summary>
+        public static bool IsOverUi(Vector2 screenPosition)
+        {
+            var events = EventSystem.current;
+            if (events == null) return false;
+            s_UiHits.Clear();
+            events.RaycastAll(new PointerEventData(events) { position = screenPosition }, s_UiHits);
+            return s_UiHits.Count > 0;
+        }
+        static readonly List<RaycastResult> s_UiHits = new List<RaycastResult>();
 
         /// <summary>Centered text at an anchor position.</summary>
         public Text Label(Transform parent, string text, int fontSize, Vector2 anchor, Vector2 size)

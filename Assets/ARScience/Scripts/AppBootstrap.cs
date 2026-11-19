@@ -27,8 +27,8 @@ namespace ARScience
         string m_CurrentScreen;
 
         // Scenario-screen widgets that change while playing.
-        Text m_Instructions, m_Prompt, m_ProgressText;
-        GameObject m_CompletePanel;
+        Text m_Instructions, m_Prompt, m_ProgressText, m_PartName, m_PartDescription;
+        GameObject m_CompletePanel, m_PartPanel, m_NextModelButton;
 
         /// <summary>Runs automatically after every scene load; makes sure exactly one app object exists.</summary>
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -45,6 +45,8 @@ namespace ARScience
 
             m_Controller = gameObject.AddComponent<ARScenarioController>();
             m_Controller.Progress += RefreshScenarioScreen;
+            m_Controller.PartTapped += ShowPartInfo;
+            m_Controller.SelectionHidden += HidePartInfo;
 
             m_Ui = new UiBuilder();
             BuildUi();
@@ -96,10 +98,11 @@ namespace ARScience
             foreach (var pair in m_Screens) pair.Value.gameObject.SetActive(pair.Key == screen);
         }
 
-        /// <summary>Back key behaviour: leave a scenario, or return to Home from a sub-screen.</summary>
+        /// <summary>Back key behaviour: close part info, leave a scenario, or return to Home from a sub-screen.</summary>
         void GoBack()
         {
-            if (m_CurrentScreen == Scenario) ExitScenario();
+            if (m_CurrentScreen == Scenario && m_PartPanel.activeSelf) HidePartInfo();
+            else if (m_CurrentScreen == Scenario) ExitScenario();
             else if (m_CurrentScreen != Home) Show(Home);
         }
 
@@ -184,6 +187,19 @@ namespace ARScience
             m_ProgressText = m_Ui.Label(screen, "", 40, new Vector2(0.5f, 0.80f), new Vector2(980, 80));
             m_Ui.Button(screen, "Exit", new Vector2(0.5f, 0.07f), ExitScenario, 500, 130);
 
+            // Explore modules with several models (e.g. two cell types) get a "Next model" button.
+            m_NextModelButton = m_Ui.Button(screen, "Next model", new Vector2(0.5f, 0.15f), () => m_Controller.NextModel(), 500, 130).gameObject;
+            m_NextModelButton.SetActive(false);
+
+            // Part info card, shown when a part of an explore model is tapped.
+            // Kept low on the screen so the model above it stays visible and tappable.
+            var card = m_Ui.Box("PartInfo", screen, new Vector2(0.04f, 0.20f), new Vector2(0.96f, 0.40f), true);
+            m_PartName = m_Ui.Label(card, "", 50, new Vector2(0.5f, 0.83f), new Vector2(900, 80));
+            m_PartDescription = m_Ui.Label(card, "", 34, new Vector2(0.5f, 0.5f), new Vector2(900, 140));
+            m_Ui.Button(card, "Close", new Vector2(0.5f, 0.15f), HidePartInfo, 360, 90);
+            m_PartPanel = card.gameObject;
+            m_PartPanel.SetActive(false);
+
             // "Complete" overlay, shown only when every step is done.
             var complete = m_Ui.Panel("Complete", screen, false);
             m_Ui.Label(complete, "Scenario complete", 56, new Vector2(0.5f, 0.55f), new Vector2(900, 120));
@@ -204,18 +220,32 @@ namespace ARScience
 
         void ExitScenario()
         {
+            HidePartInfo();
             m_Controller.End();
             Show(Modules);
         }
 
-        /// <summary>Redraws the heads-up display from the runner's current state.</summary>
+        /// <summary>Redraws the heads-up display. The controller decides the words; this just shows them.</summary>
         void RefreshScenarioScreen()
         {
-            var runner = m_Controller.Runner;
-            if (runner == null) return;
-            m_CompletePanel.SetActive(runner.IsComplete);
-            m_Prompt.text = runner.CurrentPrompt;
-            m_ProgressText.text = runner.Done + "/" + runner.Total;
+            m_CompletePanel.SetActive(m_Controller.IsComplete);
+            m_NextModelButton.SetActive(m_Controller.CanSwitchModel);
+            m_Prompt.text = m_Controller.PromptText;
+            m_ProgressText.text = m_Controller.StatusText;
+            HidePartInfo(); // Something changed (placed / switched model), so old part info is stale.
+        }
+
+        void ShowPartInfo(PartDefinition part)
+        {
+            m_PartName.text = part.name;
+            m_PartDescription.text = part.description;
+            m_PartPanel.SetActive(true);
+        }
+
+        void HidePartInfo()
+        {
+            m_PartPanel.SetActive(false);
+            m_Controller.ClearSelection();
         }
     }
 }

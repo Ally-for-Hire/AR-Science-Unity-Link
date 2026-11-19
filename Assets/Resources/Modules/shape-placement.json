@@ -1,4 +1,5 @@
 {
+  "$schema": "../../ARScience/module.schema.json",
   "schemaVersion": 1,
   "id": "shape-placement-101",
   "title": "Placing Shapes",
