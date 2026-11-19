@@ -86,7 +86,8 @@ underline whenever something is wrong, while you type.
 ```
 
 - `item`: the model's prefab (see *Make your own model* below).
-- `minZoom` / `maxZoom`: how small or big pinching can make it. 1 = the size it was placed at.
+- `minZoom` / `maxZoom`: how small or big pinching can make it. 1 = the size it was placed at,
+  so `minZoom` is 1 or less and `maxZoom` is 1 or more.
 - `parts`: the tappable pieces. `id` is the name of a **child object in the prefab**. Case, spaces,
   `_` and `-` don't matter, so `"Cell Membrane"` matches an object named `cell_membrane`.
 - `showFromZoom`: the part stays hidden until you zoom in this far. Use it for **inner parts**.

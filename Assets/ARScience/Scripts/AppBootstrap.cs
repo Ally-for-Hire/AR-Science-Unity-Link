@@ -46,6 +46,7 @@ namespace ARScience
             m_Controller = gameObject.AddComponent<ARScenarioController>();
             m_Controller.Progress += RefreshScenarioScreen;
             m_Controller.PartTapped += ShowPartInfo;
+            m_Controller.SelectionHidden += HidePartInfo;
 
             m_Ui = new UiBuilder();
             BuildUi();
@@ -187,14 +188,15 @@ namespace ARScience
             m_Ui.Button(screen, "Exit", new Vector2(0.5f, 0.07f), ExitScenario, 500, 130);
 
             // Explore modules with several models (e.g. two cell types) get a "Next model" button.
-            m_NextModelButton = m_Ui.Button(screen, "Next model", new Vector2(0.5f, 0.17f), () => m_Controller.NextModel(), 500, 130).gameObject;
+            m_NextModelButton = m_Ui.Button(screen, "Next model", new Vector2(0.5f, 0.15f), () => m_Controller.NextModel(), 500, 130).gameObject;
             m_NextModelButton.SetActive(false);
 
             // Part info card, shown when a part of an explore model is tapped.
-            var card = m_Ui.Box("PartInfo", screen, new Vector2(0.04f, 0.24f), new Vector2(0.96f, 0.52f), true);
-            m_PartName = m_Ui.Label(card, "", 54, new Vector2(0.5f, 0.84f), new Vector2(900, 100));
-            m_PartDescription = m_Ui.Label(card, "", 36, new Vector2(0.5f, 0.5f), new Vector2(900, 260));
-            m_Ui.Button(card, "Close", new Vector2(0.5f, 0.14f), HidePartInfo, 400, 110);
+            // Kept low on the screen so the model above it stays visible and tappable.
+            var card = m_Ui.Box("PartInfo", screen, new Vector2(0.04f, 0.20f), new Vector2(0.96f, 0.40f), true);
+            m_PartName = m_Ui.Label(card, "", 50, new Vector2(0.5f, 0.83f), new Vector2(900, 80));
+            m_PartDescription = m_Ui.Label(card, "", 34, new Vector2(0.5f, 0.5f), new Vector2(900, 140));
+            m_Ui.Button(card, "Close", new Vector2(0.5f, 0.15f), HidePartInfo, 360, 90);
             m_PartPanel = card.gameObject;
             m_PartPanel.SetActive(false);
 

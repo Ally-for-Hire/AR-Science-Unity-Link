@@ -146,7 +146,7 @@ namespace ARScience
                 string where = "model '" + model.item + "': ";
                 float min = ModelRules.MinZoom(model), max = ModelRules.MaxZoom(model);
                 if (model.minZoom < 0 || model.maxZoom < 0) errors.Add(where + "zoom values can't be negative");
-                if (min > max) errors.Add(where + "minZoom is bigger than maxZoom");
+                if (min > 1f || max < 1f) errors.Add(where + "minZoom must be 1 or less and maxZoom 1 or more (1 = the size it is placed at)");
                 if (max > MaxAllowedZoom) errors.Add(where + "maxZoom must be " + MaxAllowedZoom + " or less");
 
                 var seen = new List<string>();
@@ -158,6 +158,10 @@ namespace ARScience
                     if (string.IsNullOrEmpty(part.name)) errors.Add(where + "part '" + part.id + "' needs a name");
                     if (part.showFromZoom > 0 && part.hideFromZoom > 0 && part.showFromZoom >= part.hideFromZoom)
                         errors.Add(where + "part '" + part.id + "' would never be visible (showFromZoom >= hideFromZoom)");
+                    if (part.showFromZoom > max)
+                        errors.Add(where + "part '" + part.id + "' would never be visible (showFromZoom is above maxZoom)");
+                    if (part.hideFromZoom > 0 && part.hideFromZoom <= min)
+                        errors.Add(where + "part '" + part.id + "' would never be visible (hideFromZoom is at or below minZoom)");
                 }
             }
         }

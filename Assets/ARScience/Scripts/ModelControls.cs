@@ -21,12 +21,16 @@ namespace ARScience
         [Tooltip("How much one mouse-wheel notch zooms, 1.1 = 10% (editor only).")]
         public float wheelZoomStep = 1.1f;
 
-        // A press counts as a tap if it is short and barely moves.
-        const float TapMaxSeconds = 0.35f, TapMaxPixels = 25f;
+        // A press counts as a tap if it is short and barely moves (about 4 mm, so it feels the same on any phone).
+        const float TapMaxSeconds = 0.35f;
+        static float TapMaxPixels => Mathf.Max(25f, Screen.dpi * 0.15f);
         static readonly int BaseColor = Shader.PropertyToID("_BaseColor");
 
         /// <summary>Raised when the student taps a part.</summary>
         public event Action<PartDefinition> PartTapped;
+
+        /// <summary>Raised when zooming hides the part that was selected, so its info can close.</summary>
+        public event Action SelectionHidden;
 
         /// <summary>Current zoom. 1 = the size it was placed at.</summary>
         public float Zoom { get; private set; } = 1f;
@@ -35,6 +39,7 @@ namespace ARScience
         Vector3 m_PlacedScale;
         readonly List<(PartDefinition part, GameObject obj)> m_Parts = new List<(PartDefinition, GameObject)>();
         readonly List<Renderer> m_Highlighted = new List<Renderer>();
+        GameObject m_Selected; // The last tapped part, or null.
 
         // The press currently in progress (finger or mouse).
         bool m_Pressing, m_Moved;
@@ -64,6 +69,13 @@ namespace ARScience
             Zoom = ModelRules.ClampZoom(zoom, m_Model);
             transform.localScale = m_PlacedScale * Zoom;
             foreach (var (part, obj) in m_Parts) obj.SetActive(ModelRules.IsVisibleAt(part, Zoom));
+
+            // Zoomed so far that the selected part disappeared: deselect it.
+            if (m_Selected != null && !m_Selected.activeInHierarchy)
+            {
+                ClearHighlight();
+                SelectionHidden?.Invoke();
+            }
         }
 
         /// <summary>Removes the highlight from the last tapped part.</summary>
@@ -71,6 +83,7 @@ namespace ARScience
         {
             foreach (var r in m_Highlighted) if (r != null) r.SetPropertyBlock(null);
             m_Highlighted.Clear();
+            m_Selected = null;
         }
 
         // ------------------------------------------------------------ input
@@ -127,6 +140,7 @@ namespace ARScience
         void Pinch(Touch a, Touch b)
         {
             m_Moved = true; // A pinch is never a tap.
+            if (UiBuilder.IsOverUi(a.startScreenPosition) || UiBuilder.IsOverUi(b.startScreenPosition)) return; // Fingers on a button.
             float now = Vector2.Distance(a.screenPosition, b.screenPosition);
             float before = Vector2.Distance(a.screenPosition - a.delta, b.screenPosition - b.delta);
             if (before > 1f) SetZoom(Zoom * now / before);
@@ -159,6 +173,7 @@ namespace ARScience
         void Highlight(GameObject obj)
         {
             ClearHighlight();
+            m_Selected = obj;
             foreach (var r in obj.GetComponentsInChildren<Renderer>())
             {
                 var material = r.sharedMaterial;

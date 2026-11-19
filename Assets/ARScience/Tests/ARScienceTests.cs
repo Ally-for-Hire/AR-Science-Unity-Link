@@ -137,6 +137,30 @@ namespace ARScience.Tests
         }
 
         [Test]
+        public void ZoomRangeMustIncludePlacedSize()
+        {
+            var module = Explore();
+            module.scenario.models[0].minZoom = 1.5f; // The model would jump bigger the moment it is placed.
+            Assert.IsNotEmpty(ModuleCatalog.Validate(module, Items));
+        }
+
+        [Test]
+        public void PartShownOnlyAboveMaxZoomIsRejected()
+        {
+            var module = Explore(new PartDefinition { id = "Nucleus", name = "Nucleus", showFromZoom = 5f });
+            module.scenario.models[0].maxZoom = 4f;
+            Assert.IsNotEmpty(ModuleCatalog.Validate(module, Items));
+        }
+
+        [Test]
+        public void PartHiddenAtMinZoomIsRejected()
+        {
+            var module = Explore(new PartDefinition { id = "Membrane", name = "Membrane", hideFromZoom = 0.5f });
+            module.scenario.models[0].minZoom = 0.5f;
+            Assert.IsNotEmpty(ModuleCatalog.Validate(module, Items));
+        }
+
+        [Test]
         public void PartWithoutNameIsRejected() =>
             Assert.IsNotEmpty(ModuleCatalog.Validate(Explore(new PartDefinition { id = "Nucleus" }), Items));
 

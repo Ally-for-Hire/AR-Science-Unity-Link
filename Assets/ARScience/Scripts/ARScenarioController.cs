@@ -28,6 +28,9 @@ namespace ARScience
         /// <summary>Raised when the student taps a part of an explore model.</summary>
         public event Action<PartDefinition> PartTapped;
 
+        /// <summary>Raised when zooming hides the tapped part, so its info should close.</summary>
+        public event Action SelectionHidden;
+
         public ScenarioRunner Runner { get; private set; }   // Only for "placement" modules.
         public bool Active { get; private set; }
 
@@ -260,6 +263,7 @@ namespace ARScience
             m_Placed = placed.AddComponent<ModelControls>();
             m_Placed.Setup(CurrentModel);
             m_Placed.PartTapped += part => PartTapped?.Invoke(part);
+            m_Placed.SelectionHidden += () => SelectionHidden?.Invoke();
         }
 
         /// <summary>Shows or hides the detected-surface overlay according to the user's setting.</summary>

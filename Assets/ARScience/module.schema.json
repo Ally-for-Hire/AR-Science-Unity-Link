@@ -44,8 +44,8 @@
       "properties": {
         "item": { "type": "string", "description": "Prefab name in the Object Spawner, lower case, without \"Variant\" (e.g. \"celldemo\")." },
         "title": { "type": "string", "description": "Shown while this model is on screen." },
-        "minZoom": { "type": "number", "exclusiveMinimum": 0, "description": "Smallest pinch size, 1 = as placed. Default 0.5." },
-        "maxZoom": { "type": "number", "exclusiveMinimum": 0, "maximum": 10, "description": "Biggest pinch size. Default 3." },
+        "minZoom": { "type": "number", "exclusiveMinimum": 0, "maximum": 1, "description": "Smallest pinch size, 1 = as placed. Default 0.5." },
+        "maxZoom": { "type": "number", "minimum": 1, "maximum": 10, "description": "Biggest pinch size. Default 3." },
         "parts": { "type": "array", "items": { "$ref": "#/$defs/part" } }
       }
     },
