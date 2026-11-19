@@ -1,0 +1,40 @@
+{
+  "$schema": "../../ARScience/module.schema.json",
+  "schemaVersion": 1,
+  "id": "cell-demo-101",
+  "title": "Inside a Cell (demo)",
+  "description": "Place a cell, turn it, and zoom in to see inside.",
+  "scenario": {
+    "type": "explore",
+    "instructions": "Find a table, tap to place the cell. Pinch to zoom in and look inside!",
+    "requireHorizontalSurface": true,
+    "models": [
+      {
+        "item": "celldemo",
+        "title": "Animal cell",
+        "minZoom": 0.5,
+        "maxZoom": 4,
+        "parts": [
+          {
+            "id": "Membrane",
+            "name": "Cell membrane",
+            "description": "The cell's skin. It decides what can go in and out.",
+            "hideFromZoom": 2
+          },
+          {
+            "id": "Nucleus",
+            "name": "Nucleus",
+            "description": "The control center. It holds the DNA, the cell's instructions.",
+            "showFromZoom": 2
+          },
+          {
+            "id": "Mitochondrion",
+            "name": "Mitochondrion",
+            "description": "The power plant. It turns food into energy the cell can use.",
+            "showFromZoom": 2
+          }
+        ]
+      }
+    ]
+  }
+}
